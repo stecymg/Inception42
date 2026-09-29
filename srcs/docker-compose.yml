@@ -1,0 +1,74 @@
+services:
+  mariadb:
+    build: ./requirements/mariadb/.
+    image: mariadb:latest
+    container_name: mariadb
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception
+
+  wordpress:
+    build: ./requirements/wordpress/.
+    image: wordpress:latest
+    container_name: wordpress
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+      - redis
+
+  nginx:
+    build: ./requirements/nginx/.
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+    env_file:
+      - .env
+
+  redis:
+    build: ./requirements/redis/.
+    image: redis:latest
+    container_name: redis
+    restart: always
+    networks:
+      - inception
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+    env_file:
+      - .env
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/smontgen/data/mariadb
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/smontgen/data/wordpress
+      o: bind
+
+networks:
+  inception:
+    driver: bridge
