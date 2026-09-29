@@ -12,8 +12,8 @@ chmod +x wp-cli.phar
 mv wp-cli.phar /usr/local/bin/wp
 
 # Donne les bons droits au dossier WordPress
-chmod -R 777 /var/www/html
-chmod -R 777 /var/www/
+chown -R www-data:www-data /var/www/
+chmod -R 755 /var/www/
 
 # Attendre que MariaDB soit prêt
 until mysqladmin --silent --host="$WORDPRESS_DB_HOST" ping; do
